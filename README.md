@@ -1,15 +1,15 @@
-# Sarcastic Bot
+# People Pleasing Bot
 
 A fun web application that generates sarcastic roasts based on user input. The bot uses AI to create personalized, humorous roasts and pairs them with reaction GIFs and voice responses.
 
-## Features
+## 🌟 Features
 
-- **Text-based Roasts**: Enter text about yourself and get a personalized roast
-- **Voice Input**: Record your voice and have it transcribed using the Whisper model
-- **Reaction GIFs**: Each roast comes with a matching reaction GIF
-- **Voice Responses**: Roasts are read aloud using ElevenLabs text-to-speech
-- **Dark/Light Mode**: Toggle between dark and light themes
-- **Model Selection**: Choose between different AI models for roasting
+- **Compliment Generator**: Enter a message and receive a warm, personalized compliment.
+- **Voice Input**: Speak your thoughts — the Whisper model transcribes your audio to text
+- **Feel-Good GIFs**: Each response is paired with a cheerful, uplifting reaction GIF
+- **Voice Compliments**: Compliments are spoken aloud using ElevenLabs text-to-speech for a more personal experience.
+- **Dark/Light Mode**: Toggle between dark and light themes for your comfort
+- **Model Selection**: Choose from different AI models to tailor the tone and creativity of the compliments
 
 ## Setup
 
@@ -28,7 +28,7 @@ A fun web application that generates sarcastic roasts based on user input. The b
    ```
 4. Run the application:
    ```
-   python roast_bot.py
+   python people_pleaser.py
    ```
 5. Open your browser and navigate to `http://localhost:5000`
 
@@ -40,7 +40,7 @@ The application uses the Whisper model from Hugging Face for speech recognition.
 2. Speak your message
 3. Click the button again to stop recording
 4. The transcribed text will appear in the input field
-5. Click "Roast" to generate a response
+5. Click "Compliment" to generate a response
 
 ### Troubleshooting Speech Recognition
 
