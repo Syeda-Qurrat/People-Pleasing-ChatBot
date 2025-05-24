@@ -2,7 +2,6 @@ document.getElementById('themeToggle').addEventListener('click', function () {
     const html = document.documentElement;
     const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
 });
@@ -10,24 +9,18 @@ document.getElementById('themeToggle').addEventListener('click', function () {
 document.addEventListener('DOMContentLoaded', function () {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
-
-    // Initialize voice recording functionality
     initVoiceRecording();
 });
 
-// Voice recording variables
+// Voice Recording
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 
 function initVoiceRecording() {
     const voiceButton = document.getElementById('voiceButton');
-    voiceButton.addEventListener('click', function () {
-        if (!isRecording) {
-            startRecording();
-        } else {
-            stopRecording();
-        }
+    voiceButton.addEventListener('click', () => {
+        isRecording ? stopRecording() : startRecording();
     });
 }
 
@@ -35,6 +28,7 @@ async function startRecording() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {
             audioChunks.push(event.data);
@@ -43,17 +37,17 @@ async function startRecording() {
         mediaRecorder.onstop = async () => {
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             await sendAudioToServer(audioBlob);
-            audioChunks = [];
         };
 
         mediaRecorder.start();
         isRecording = true;
 
-        document.getElementById('voiceButton').classList.add('recording');
-        document.getElementById('voiceButton').title = 'Stop recording';
+        const btn = document.getElementById('voiceButton');
+        btn.classList.add('recording');
+        btn.title = 'Stop recording';
     } catch (error) {
-        console.error('Error accessing microphone:', error);
-        alert('Could not access your microphone. Please check permissions and try again.');
+        console.error('Microphone error:', error);
+        alert('Unable to access your mic. Please allow microphone access and try again.');
     }
 }
 
@@ -62,9 +56,9 @@ function stopRecording() {
         mediaRecorder.stop();
         isRecording = false;
 
-        document.getElementById('voiceButton').classList.remove('recording');
-        document.getElementById('voiceButton').title = 'Record voice';
-
+        const btn = document.getElementById('voiceButton');
+        btn.classList.remove('recording');
+        btn.title = 'Start recording';
         mediaRecorder.stream.getTracks().forEach(track => track.stop());
     }
 }
@@ -72,7 +66,7 @@ function stopRecording() {
 async function sendAudioToServer(audioBlob) {
     try {
         const userInput = document.getElementById('userInput');
-        userInput.value = 'Transcribing...';
+        userInput.value = 'Transcribing your lovely words...';
         userInput.disabled = true;
 
         const formData = new FormData();
@@ -84,109 +78,101 @@ async function sendAudioToServer(audioBlob) {
         });
 
         const data = await response.json();
-
         if (data.error) throw new Error(data.error);
 
         userInput.value = data.transcription;
         userInput.disabled = false;
     } catch (error) {
-        console.error('Transcription error:', error);
-        alert('Error transcribing audio. Please try again or type your message.');
-        document.getElementById('userInput').value = '';
-        document.getElementById('userInput').disabled = false;
+        console.error('Transcription failed:', error);
+        alert('Oops! Couldn’t process the audio. Try typing instead!');
+        const userInput = document.getElementById('userInput');
+        userInput.value = '';
+        userInput.disabled = false;
     }
 }
 
 async function getCompliment() {
-    const userInput = document.getElementById('userInput').value;
-    const modelChoice = document.getElementById('modelSelect').value;
+    const inputEl = document.getElementById('userInput');
+    const userInput = inputEl.value.trim();
     if (!userInput) return;
 
     const chatContainer = document.getElementById('chatContainer');
-    const userMessageDiv = document.createElement('div');
-    userMessageDiv.className = 'message user';
-    userMessageDiv.innerHTML = `<div class="message-content">${userInput}</div>`;
-    chatContainer.appendChild(userMessageDiv);
+    const userMsg = document.createElement('div');
+    userMsg.className = 'message user';
+    userMsg.innerHTML = `<div class="message-content">${userInput}</div>`;
+    chatContainer.appendChild(userMsg);
 
-    document.getElementById('userInput').value = '';
-    document.getElementById('userInput').disabled = true;
-    document.getElementById('modelSelect').disabled = true;
-    const buttons = document.getElementsByTagName('button');
-    for (let button of buttons) button.disabled = true;
+    inputEl.value = '';
+    inputEl.disabled = true;
+    const voiceBtn = document.getElementById('voiceButton');
+    voiceBtn.disabled = true;
 
     try {
         const response = await fetch('http://localhost:5000/compliment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: userInput, model: modelChoice })
+            body: JSON.stringify({ text: userInput })
         });
 
         const data = await response.json();
 
-        const botMessageDiv = document.createElement('div');
-        botMessageDiv.className = 'message bot';
+        const botMsg = document.createElement('div');
+        botMsg.className = 'message bot';
 
         const complimentDiv = document.createElement('div');
         complimentDiv.className = 'message-content';
         complimentDiv.textContent = data.compliment;
-        botMessageDiv.appendChild(complimentDiv);
+        botMsg.appendChild(complimentDiv);
 
         const gifContainer = document.createElement('div');
         gifContainer.className = 'gif-container';
         const gifImage = document.createElement('img');
         gifImage.src = data.gif;
+        gifImage.alt = "Feel-good reaction";
         gifContainer.appendChild(gifImage);
-        botMessageDiv.appendChild(gifContainer);
-
-        const audioControl = document.createElement('button');
-        audioControl.className = 'audio-control';
-        audioControl.innerHTML = '<span class="play-icon">🔊 Play</span><span class="pause-icon">⏸️ Pause</span>';
-        audioControl.onclick = function () { toggleAudio(this); };
-        botMessageDiv.appendChild(audioControl);
-
-        chatContainer.appendChild(botMessageDiv);
+        botMsg.appendChild(gifContainer);
 
         const audioPlayer = document.createElement('audio');
         audioPlayer.src = `data:audio/mpeg;base64,${data.audio}`;
-        botMessageDiv.appendChild(audioPlayer);
+        botMsg.appendChild(audioPlayer);
+
+        const audioBtn = document.createElement('button');
+        audioBtn.className = 'audio-control';
+        audioBtn.innerHTML = '<span class="play-icon">🔊 Play</span><span class="pause-icon">⏸️ Pause</span>';
+        audioBtn.onclick = () => toggleAudio(audioBtn);
+        botMsg.appendChild(audioBtn);
+
+        chatContainer.appendChild(botMsg);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
 
         audioPlayer.play();
-        audioControl.classList.add('playing');
+        audioBtn.classList.add('playing');
 
-        audioPlayer.onended = function () {
-            audioControl.classList.remove('playing');
+        audioPlayer.onended = () => {
+            audioBtn.classList.remove('playing');
         };
-
-        chatContainer.scrollTop = chatContainer.scrollHeight;
     } catch (error) {
-        console.error('Error:', error);
-        alert('Something went wrong! Try again later.');
+        console.error('Compliment fetch failed:', error);
+        alert('Something went wrong while fetching your compliment. Please try again!');
     }
 
-    document.getElementById('userInput').disabled = false;
-    document.getElementById('modelSelect').disabled = false;
-    for (let button of buttons) button.disabled = false;
+    inputEl.disabled = false;
+    voiceBtn.disabled = false;
 }
 
 document.getElementById('userInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        getCompliment();
-    }
-});
-
-document.getElementById('audioPlayer')?.addEventListener('ended', function () {
-    document.getElementById('audioControl')?.classList.remove('playing');
+    if (e.key === 'Enter') getCompliment();
 });
 
 function toggleAudio(button) {
-    const audioPlayer = button.nextElementSibling;
+    const audio = button.nextElementSibling;
 
-    if (audioPlayer.paused || audioPlayer.ended) {
-        audioPlayer.play();
+    if (audio.paused || audio.ended) {
+        audio.play();
         button.classList.add('playing');
     } else {
-        audioPlayer.pause();
-        audioPlayer.currentTime = 0;
+        audio.pause();
+        audio.currentTime = 0;
         button.classList.remove('playing');
     }
 }
