@@ -3,7 +3,7 @@ flask-cors==4.0.0
 groq==0.4.2
 requests==2.31.0
 python-dotenv==1.0.0
-elevenlabs==0.2.26
+elevenlabs==1.58.1
 transformers==4.36.2
 torch==2.1.2
 accelerate==0.25.0
