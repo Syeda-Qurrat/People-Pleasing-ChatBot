@@ -1,6 +1,6 @@
 # People Pleasing Bot
 
-A fun web application that generates sarcastic roasts based on user input. The bot uses AI to create personalized, humorous roasts and pairs them with reaction GIFs and voice responses.
+A fun web application that generates pleasing response based on user input. The bot uses AI to create personalized and cheerful responses and pairs them with reaction GIFs and voice responses.
 
 ## 🌟 Features
 
@@ -63,3 +63,4 @@ If you encounter issues with the speech recognition feature:
 ## License
 
 MIT 
+
